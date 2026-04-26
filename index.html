@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TeleDrive - Free Cloud Storage</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  
   :root {
     --bg: #0a0a0f;
     --surface: #13131a;
@@ -17,294 +17,110 @@
     --text: #f0f0f5;
     --muted: #7a7a9a;
   }
-
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-
-  /* NAV */
-  nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.2rem 2rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; border-bottom: 1px solid var(--border); background: var(--surface); }
   .logo { font-size: 1.4rem; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
   .logo span { color: var(--accent2); }
-  .nav-btn {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 0.5rem 1.2rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
-  /* AUTH SCREENS */
+  .nav-btn { background: var(--accent); color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
   .screen { display: none; }
   .screen.active { display: block; }
-
-  .auth-box {
-    max-width: 420px;
-    margin: 4rem auto;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2.5rem;
-  }
+  .auth-box { max-width: 420px; margin: 4rem auto; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; }
   .auth-box h2 { font-size: 1.6rem; margin-bottom: 0.4rem; }
   .auth-box p { color: var(--muted); margin-bottom: 2rem; font-size: 0.9rem; }
-
   .field { margin-bottom: 1.2rem; }
   .field label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; }
-  .field input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    color: var(--text);
-    font-size: 0.95rem;
-    outline: none;
-    transition: border 0.2s;
-  }
+  .field input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text); font-size: 0.95rem; outline: none; transition: border 0.2s; }
   .field input:focus { border-color: var(--accent); }
-
-  .btn-primary {
-    width: 100%;
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 0.85rem;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
+  .btn-primary { width: 100%; background: var(--accent); color: white; border: none; padding: 0.85rem; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
   .btn-primary:hover { opacity: 0.88; }
-
   .switch-link { text-align: center; margin-top: 1.2rem; color: var(--muted); font-size: 0.88rem; }
   .switch-link a { color: var(--accent2); cursor: pointer; text-decoration: none; }
-
-  /* DASHBOARD */
-  .dash-layout {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    min-height: calc(100vh - 60px);
-  }
-
-  .sidebar {
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 1.5rem 1rem;
-  }
-  .sidebar-item {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.65rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    color: var(--muted);
-    font-size: 0.92rem;
-    transition: all 0.2s;
-    margin-bottom: 0.3rem;
-  }
-  .sidebar-item:hover, .sidebar-item.active {
-    background: rgba(108,99,255,0.12);
-    color: var(--accent);
-  }
-
+  .dash-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 60px); }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 1rem; }
+  .sidebar-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.65rem 1rem; border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 0.92rem; transition: all 0.2s; margin-bottom: 0.3rem; }
+  .sidebar-item:hover, .sidebar-item.active { background: rgba(108,99,255,0.12); color: var(--accent); }
   .main-content { padding: 2rem; }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.2rem 1.5rem;
-  }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.5rem; }
   .stat-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; }
   .stat-val { font-size: 1.6rem; font-weight: 700; }
   .stat-val.green { color: var(--accent2); }
   .stat-val.purple { color: var(--accent); }
-
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    padding: 2.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    margin-bottom: 2rem;
-  }
+  .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 2.5rem; text-align: center; cursor: pointer; transition: border-color 0.2s; margin-bottom: 2rem; }
   .upload-zone:hover { border-color: var(--accent); }
   .upload-zone .icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
   .upload-zone h3 { font-size: 1rem; margin-bottom: 0.3rem; }
   .upload-zone p { color: var(--muted); font-size: 0.85rem; }
   #fileInput { display: none; }
-
   .files-section h3 { font-size: 1rem; margin-bottom: 1rem; color: var(--muted); }
   .file-list { display: flex; flex-direction: column; gap: 0.6rem; }
-
-  .file-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.9rem 1.2rem;
-  }
+  .file-item { display: flex; align-items: center; gap: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1.2rem; }
   .file-icon { font-size: 1.4rem; }
   .file-info { flex: 1; }
   .file-name { font-size: 0.92rem; font-weight: 500; }
   .file-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
   .file-actions { display: flex; gap: 0.5rem; }
-  .btn-sm {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 0.35rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+  .btn-sm { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
   .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
   .btn-sm.danger:hover { border-color: #ff4d4d; color: #ff4d4d; }
-
-  .progress-bar {
-    background: var(--border);
-    border-radius: 99px;
-    height: 6px;
-    margin-top: 0.8rem;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 99px;
-    transition: width 0.4s;
-  }
-
-  .toast {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: var(--card);
-    border: 1px solid var(--accent2);
-    color: var(--accent2);
-    padding: 0.8rem 1.4rem;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    display: none;
-    z-index: 999;
-  }
+  .progress-bar { background: var(--border); border-radius: 99px; height: 6px; margin-top: 0.8rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.4s; }
+  .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--card); border: 1px solid var(--accent2); color: var(--accent2); padding: 0.8rem 1.4rem; border-radius: 10px; font-size: 0.9rem; display: none; z-index: 999; }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="logo">Tele<span>Drive</span></div>
   <button class="nav-btn" id="logoutBtn" onclick="logout()" style="display:none">Logout</button>
 </nav>
 
-<!-- LOGIN SCREEN -->
 <div class="screen active" id="loginScreen">
   <div class="auth-box">
     <h2>Welcome back</h2>
     <p>Sign in to access your files</p>
-    <div class="field">
-      <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="you@example.com">
-    </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="loginPass" placeholder="••••••••">
-    </div>
+    <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••"></div>
     <button class="btn-primary" onclick="login()">Sign In</button>
-    <div class="switch-link">
-      Don't have an account? <a onclick="showScreen('signupScreen')">Sign up</a>
-    </div>
+    <div class="switch-link">Don't have an account? <a onclick="showScreen('signupScreen')">Sign up</a></div>
   </div>
 </div>
 
-<!-- SIGNUP SCREEN -->
 <div class="screen" id="signupScreen">
   <div class="auth-box">
     <h2>Create account</h2>
-    <p>Get unlimited storage for just ₹100/month</p>
-    <div class="field">
-      <label>Full Name</label>
-      <input type="text" id="signupName" placeholder="Your name">
-    </div>
-    <div class="field">
-      <label>Email</label>
-      <input type="email" id="signupEmail" placeholder="you@example.com">
-    </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="signupPass" placeholder="Min 8 characters">
-    </div>
+    <p>Unlimited storage sirf ₹100/month mein</p>
+    <div class="field"><label>Full Name</label><input type="text" id="signupName" placeholder="Tumhara naam"></div>
+    <div class="field"><label>Email</label><input type="email" id="signupEmail" placeholder="you@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="signupPass" placeholder="Min 8 characters"></div>
     <button class="btn-primary" onclick="signup()">Create Account</button>
-    <div class="switch-link">
-      Already have an account? <a onclick="showScreen('loginScreen')">Sign in</a>
-    </div>
+    <div class="switch-link">Already have an account? <a onclick="showScreen('loginScreen')">Sign in</a></div>
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div class="screen" id="dashScreen">
   <div class="dash-layout">
     <div class="sidebar">
       <div class="sidebar-item active">📁 My Files</div>
       <div class="sidebar-item">⭐ Starred</div>
       <div class="sidebar-item">🗑️ Trash</div>
-      <div class="sidebar-item" style="margin-top:auto">⚙️ Settings</div>
     </div>
     <div class="main-content">
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Files</div>
-          <div class="stat-val purple" id="totalFiles">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Storage Used</div>
-          <div class="stat-val green" id="storageUsed">0 MB</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Plan</div>
-          <div class="stat-val" style="font-size:1.1rem">Unlimited ♾️</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Total Files</div><div class="stat-val purple" id="totalFiles">0</div></div>
+        <div class="stat-card"><div class="stat-label">Storage Used</div><div class="stat-val green" id="storageUsed">0 MB</div></div>
+        <div class="stat-card"><div class="stat-label">Plan</div><div class="stat-val" style="font-size:1.1rem">Unlimited ♾️</div></div>
       </div>
-
       <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
         <div class="icon">☁️</div>
         <h3>Click to upload files</h3>
         <p>Any file type • Unlimited size • Stored securely</p>
         <input type="file" id="fileInput" multiple onchange="uploadFiles(this.files)">
       </div>
-
       <div id="uploadProgress" style="display:none; margin-bottom:1.5rem">
         <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem">Uploading...</p>
         <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
       </div>
-
       <div class="files-section">
         <h3>YOUR FILES</h3>
         <div class="file-list" id="fileList"></div>
@@ -316,10 +132,12 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const BOT_TOKEN = '8682529732:AAFjUOCa9HNkclsys1_46YrkLeK3OXCvr64';
+const SUPABASE_URL = 'https://tsrvzibqxdjdookvyrio.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzcnZ6aWJxeGRqZG9va3Z5cmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzY0MzAsImV4cCI6MjA5Mjc1MjQzMH0.F18Qv_qQafuIaQ6A27iPKXPl2SnW4vnkXOR8c2rOnXQ';
+const BOT_TOKEN = 'mydrivestore_bot';
 const CHANNEL_ID = '-1003989732686';
 
-let files = JSON.parse(localStorage.getItem('teledrive_files') || '[]');
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 
 function showScreen(id) {
@@ -334,35 +152,38 @@ function showToast(msg) {
   setTimeout(() => t.style.display = 'none', 3000);
 }
 
-function login() {
-  const email = document.getElementById('loginEmail').value;
+async function login() {
+  const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
   if (!email || !pass) { showToast('Sab fields bharo!'); return; }
-  const users = JSON.parse(localStorage.getItem('teledrive_users') || '[]');
-  const user = users.find(u => u.email === email && u.pass === pass);
-  if (!user) { showToast('Email ya password galat hai'); return; }
-  currentUser = user;
+
+  const { data, error } = await sb.from('users').select('*').eq('email', email).eq('password', pass).single();
+  if (error || !data) { showToast('Email ya password galat hai'); return; }
+
+  currentUser = data;
   document.getElementById('logoutBtn').style.display = 'block';
-  loadDash();
+  await loadDash();
   showScreen('dashScreen');
 }
 
-function signup() {
-  const name = document.getElementById('signupName').value;
-  const email = document.getElementById('signupEmail').value;
+async function signup() {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
   const pass = document.getElementById('signupPass').value;
   if (!name || !email || !pass) { showToast('Sab fields bharo!'); return; }
   if (pass.length < 8) { showToast('Password 8+ characters ka hona chahiye'); return; }
-  const users = JSON.parse(localStorage.getItem('teledrive_users') || '[]');
-  if (users.find(u => u.email === email)) { showToast('Email already registered hai'); return; }
-  const newUser = { name, email, pass };
-  users.push(newUser);
-  localStorage.setItem('teledrive_users', JSON.stringify(users));
-  currentUser = newUser;
+
+  const { data: existing } = await sb.from('users').select('id').eq('email', email).single();
+  if (existing) { showToast('Email already registered hai'); return; }
+
+  const { data, error } = await sb.from('users').insert({ name, email, password: pass }).select().single();
+  if (error) { showToast('Error: ' + error.message); return; }
+
+  currentUser = data;
   document.getElementById('logoutBtn').style.display = 'block';
-  loadDash();
+  await loadDash();
   showScreen('dashScreen');
-  showToast('Account ban gaya! Welcome ' + name);
+  showToast('Welcome ' + name + '! 🎉');
 }
 
 function logout() {
@@ -377,37 +198,28 @@ async function uploadFiles(fileList) {
 
   for (let i = 0; i < fileList.length; i++) {
     const file = fileList[i];
-    const pct = Math.round(((i+1)/fileList.length)*100);
-
     try {
       const formData = new FormData();
       formData.append('chat_id', CHANNEL_ID);
       formData.append('document', file);
-      formData.append('caption', `📁 ${file.name}\n👤 User: ${currentUser.email}\n📅 ${new Date().toLocaleDateString('hi-IN')}`);
+      formData.append('caption', `📁 ${file.name}\n👤 ${currentUser.email}`);
 
-      const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
+      const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: formData });
+      const tgData = await res.json();
 
-      if (data.ok) {
-        const fileObj = {
-          id: data.result.message_id,
-          name: file.name,
-          size: formatSize(file.size),
-          type: file.type || 'unknown',
-          date: new Date().toLocaleDateString('hi-IN'),
-          fileId: data.result.document?.file_id
-        };
-        files.push(fileObj);
-        localStorage.setItem('teledrive_files', JSON.stringify(files));
+      if (tgData.ok) {
+        await sb.from('files').insert({
+          user_email: currentUser.email,
+          file_name: file.name,
+          file_size: formatSize(file.size),
+          file_type: file.type || 'unknown',
+          telegram_file_id: tgData.result.document?.file_id
+        });
       }
     } catch(e) {
       showToast('Upload fail: ' + file.name);
     }
-
-    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressFill').style.width = Math.round(((i+1)/fileList.length)*100) + '%';
   }
 
   setTimeout(() => {
@@ -415,8 +227,8 @@ async function uploadFiles(fileList) {
     document.getElementById('progressFill').style.width = '0%';
   }, 800);
 
-  loadDash();
-  showToast('Files upload ho gayi!');
+  await loadDash();
+  showToast('Files upload ho gayi! ✅');
 }
 
 function formatSize(bytes) {
@@ -426,6 +238,7 @@ function formatSize(bytes) {
 }
 
 function getIcon(type) {
+  if (!type) return '📁';
   if (type.startsWith('image')) return '🖼️';
   if (type.startsWith('video')) return '🎬';
   if (type.startsWith('audio')) return '🎵';
@@ -434,10 +247,9 @@ function getIcon(type) {
   return '📁';
 }
 
-function deleteFile(idx) {
-  files.splice(idx, 1);
-  localStorage.setItem('teledrive_files', JSON.stringify(files));
-  loadDash();
+async function deleteFile(id) {
+  await sb.from('files').delete().eq('id', id);
+  await loadDash();
   showToast('File delete ho gayi');
 }
 
@@ -446,39 +258,39 @@ async function downloadFile(fileId, name) {
     const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${fileId}`);
     const data = await res.json();
     if (data.ok) {
-      const url = `https://api.telegram.org/file/bot${BOT_TOKEN}/${data.result.file_path}`;
-      window.open(url, '_blank');
+      window.open(`https://api.telegram.org/file/bot${BOT_TOKEN}/${data.result.file_path}`, '_blank');
     }
   } catch(e) {
     showToast('Download fail ho gaya');
   }
 }
 
-function loadDash() {
+async function loadDash() {
+  const { data: files, error } = await sb.from('files').select('*').eq('user_email', currentUser.email).order('uploaded_at', { ascending: false });
+
+  document.getElementById('totalFiles').textContent = files?.length || 0;
   const list = document.getElementById('fileList');
-  document.getElementById('totalFiles').textContent = files.length;
-  
-  if (files.length === 0) {
-    list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:2rem">Koi file nahi hai abhi. Upload karo!</p>';
-    document.getElementById('storageUsed').textContent = '0 MB';
+
+  if (!files || files.length === 0) {
+    list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:2rem">Koi file nahi hai. Upload karo! ☁️</p>';
+    document.getElementById('storageUsed').textContent = '0 files';
     return;
   }
 
-  list.innerHTML = files.map((f, i) => `
+  document.getElementById('storageUsed').textContent = files.length + ' files';
+  list.innerHTML = files.map(f => `
     <div class="file-item">
-      <span class="file-icon">${getIcon(f.type)}</span>
+      <span class="file-icon">${getIcon(f.file_type)}</span>
       <div class="file-info">
-        <div class="file-name">${f.name}</div>
-        <div class="file-meta">${f.size} • ${f.date}</div>
+        <div class="file-name">${f.file_name}</div>
+        <div class="file-meta">${f.file_size} • ${new Date(f.uploaded_at).toLocaleDateString('hi-IN')}</div>
       </div>
       <div class="file-actions">
-        <button class="btn-sm" onclick="downloadFile('${f.fileId}','${f.name}')">Download</button>
-        <button class="btn-sm danger" onclick="deleteFile(${i})">Delete</button>
+        <button class="btn-sm" onclick="downloadFile('${f.telegram_file_id}','${f.file_name}')">Download</button>
+        <button class="btn-sm danger" onclick="deleteFile('${f.id}')">Delete</button>
       </div>
     </div>
   `).join('');
-
-  document.getElementById('storageUsed').textContent = files.length + ' files';
 }
 </script>
 </body>
