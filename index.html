@@ -36,7 +36,7 @@
   .switch-link { text-align: center; margin-top: 1.2rem; color: var(--muted); font-size: 0.88rem; }
   .switch-link a { color: var(--accent2); cursor: pointer; text-decoration: none; }
   .dash-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 60px); }
-  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 1rem; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; }
   .sidebar-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.65rem 1rem; border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 0.92rem; transition: all 0.2s; margin-bottom: 0.3rem; }
   .sidebar-item:hover, .sidebar-item.active { background: rgba(108,99,255,0.12); color: var(--accent); }
   .main-content { padding: 2rem; }
@@ -66,6 +66,15 @@
   .progress-bar { background: var(--border); border-radius: 99px; height: 6px; margin-top: 0.8rem; overflow: hidden; }
   .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.4s; }
   .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--card); border: 1px solid var(--accent2); color: var(--accent2); padding: 0.8rem 1.4rem; border-radius: 10px; font-size: 0.9rem; display: none; z-index: 999; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 998; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; max-width: 420px; width: 90%; }
+  .modal-box h2 { margin-bottom: 0.5rem; }
+  .modal-box .sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.5rem; }
+  .info-row { background: var(--surface); border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; }
+  .info-row .lbl { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.3rem; }
+  .info-row .val { font-weight: 600; font-size: 0.95rem; }
+  .close-btn { width: 100%; margin-top: 1.2rem; background: var(--accent); color: white; border: none; padding: 0.8rem; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.95rem; }
 </style>
 </head>
 <body>
@@ -75,6 +84,7 @@
   <button class="nav-btn" id="logoutBtn" onclick="logout()" style="display:none">Logout</button>
 </nav>
 
+<!-- LOGIN -->
 <div class="screen active" id="loginScreen">
   <div class="auth-box">
     <h2>Welcome back</h2>
@@ -86,6 +96,7 @@
   </div>
 </div>
 
+<!-- SIGNUP -->
 <div class="screen" id="signupScreen">
   <div class="auth-box">
     <h2>Create account</h2>
@@ -98,17 +109,22 @@
   </div>
 </div>
 
+<!-- DASHBOARD -->
 <div class="screen" id="dashScreen">
   <div class="dash-layout">
     <div class="sidebar">
-      <div class="sidebar-item active">📁 My Files</div>
-      <div class="sidebar-item">⭐ Starred</div>
-      <div class="sidebar-item">🗑️ Trash</div>
+      <div class="sidebar-item active" onclick="showDashSection('files')">📁 My Files</div>
+      <div class="sidebar-item" onclick="showDashSection('files')">⭐ Starred</div>
+      <div class="sidebar-item" onclick="showDashSection('files')">🗑️ Trash</div>
+      <div style="margin-top: auto;">
+        <div class="sidebar-item" onclick="openModal('aboutModal')">ℹ️ About</div>
+        <div class="sidebar-item" onclick="openModal('contactModal')">📞 Contact</div>
+      </div>
     </div>
     <div class="main-content">
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label">Total Files</div><div class="stat-val purple" id="totalFiles">0</div></div>
-        <div class="stat-card"><div class="stat-label">Storage Used</div><div class="stat-val green" id="storageUsed">0 MB</div></div>
+        <div class="stat-card"><div class="stat-label">Storage Used</div><div class="stat-val green" id="storageUsed">0 files</div></div>
         <div class="stat-card"><div class="stat-label">Plan</div><div class="stat-val" style="font-size:1.1rem">Unlimited ♾️</div></div>
       </div>
       <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
@@ -129,6 +145,39 @@
   </div>
 </div>
 
+<!-- ABOUT MODAL -->
+<div class="modal-overlay" id="aboutModal" onclick="closeModalOutside(event,'aboutModal')">
+  <div class="modal-box">
+    <h2>ℹ️ About TeleDrive</h2>
+    <p class="sub">Secure, fast aur unlimited cloud storage</p>
+    <div class="info-row"><div class="lbl">Service</div><div class="val">TeleDrive Cloud Storage</div></div>
+    <div class="info-row"><div class="lbl">Version</div><div class="val">1.0.0</div></div>
+    <div class="info-row"><div class="lbl">Owner</div><div class="val">Vishal</div></div>
+    <div class="info-row"><div class="lbl">Plan</div><div class="val">₹100/month - Unlimited Storage</div></div>
+    <div class="info-row"><div class="lbl">Technology</div><div class="val">Powered by Telegram + Supabase</div></div>
+    <button class="close-btn" onclick="closeModal('aboutModal')">Close</button>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="contactModal" onclick="closeModalOutside(event,'contactModal')">
+  <div class="modal-box">
+    <h2>📞 Contact Us</h2>
+    <p class="sub">Koi bhi problem ho toh seedha contact karo - jaldi reply milega!</p>
+    <div class="info-row"><div class="lbl">Owner</div><div class="val">Vishal</div></div>
+    <div class="info-row">
+      <div class="lbl">Telegram</div>
+      <div class="val" style="color:var(--accent2);">@scienceyug</div>
+    </div>
+    <div class="info-row">
+      <div class="lbl">Email</div>
+      <div class="val" style="color:var(--accent2);">scienceyug@gmail.com</div>
+    </div>
+    <div class="info-row"><div class="lbl">Support Hours</div><div class="val">Mon - Sat, 10am - 8pm</div></div>
+    <button class="close-btn" onclick="closeModal('contactModal')">Close</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -136,7 +185,6 @@ const SUPABASE_URL = 'https://tsrvzibqxdjdookvyrio.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzcnZ6aWJxeGRqZG9va3Z5cmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzY0MzAsImV4cCI6MjA5Mjc1MjQzMH0.F18Qv_qQafuIaQ6A27iPKXPl2SnW4vnkXOR8c2rOnXQ';
 const BOT_TOKEN = 'mydrivestore_bot';
 const CHANNEL_ID = '-1003989732686';
-
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 
@@ -144,6 +192,11 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModalOutside(e, id) { if (e.target.classList.contains('modal-overlay')) closeModal(id); }
+function showDashSection() {}
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -156,10 +209,8 @@ async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
   if (!email || !pass) { showToast('Sab fields bharo!'); return; }
-
   const { data, error } = await sb.from('users').select('*').eq('email', email).eq('password', pass).single();
   if (error || !data) { showToast('Email ya password galat hai'); return; }
-
   currentUser = data;
   document.getElementById('logoutBtn').style.display = 'block';
   await loadDash();
@@ -172,13 +223,10 @@ async function signup() {
   const pass = document.getElementById('signupPass').value;
   if (!name || !email || !pass) { showToast('Sab fields bharo!'); return; }
   if (pass.length < 8) { showToast('Password 8+ characters ka hona chahiye'); return; }
-
   const { data: existing } = await sb.from('users').select('id').eq('email', email).single();
   if (existing) { showToast('Email already registered hai'); return; }
-
   const { data, error } = await sb.from('users').insert({ name, email, password: pass }).select().single();
   if (error) { showToast('Error: ' + error.message); return; }
-
   currentUser = data;
   document.getElementById('logoutBtn').style.display = 'block';
   await loadDash();
@@ -195,7 +243,6 @@ function logout() {
 async function uploadFiles(fileList) {
   if (!fileList.length) return;
   document.getElementById('uploadProgress').style.display = 'block';
-
   for (let i = 0; i < fileList.length; i++) {
     const file = fileList[i];
     try {
@@ -203,10 +250,8 @@ async function uploadFiles(fileList) {
       formData.append('chat_id', CHANNEL_ID);
       formData.append('document', file);
       formData.append('caption', `📁 ${file.name}\n👤 ${currentUser.email}`);
-
       const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: formData });
       const tgData = await res.json();
-
       if (tgData.ok) {
         await sb.from('files').insert({
           user_email: currentUser.email,
@@ -216,17 +261,13 @@ async function uploadFiles(fileList) {
           telegram_file_id: tgData.result.document?.file_id
         });
       }
-    } catch(e) {
-      showToast('Upload fail: ' + file.name);
-    }
+    } catch(e) { showToast('Upload fail: ' + file.name); }
     document.getElementById('progressFill').style.width = Math.round(((i+1)/fileList.length)*100) + '%';
   }
-
   setTimeout(() => {
     document.getElementById('uploadProgress').style.display = 'none';
     document.getElementById('progressFill').style.width = '0%';
   }, 800);
-
   await loadDash();
   showToast('Files upload ho gayi! ✅');
 }
@@ -260,24 +301,18 @@ async function downloadFile(fileId, name) {
     if (data.ok) {
       window.open(`https://api.telegram.org/file/bot${BOT_TOKEN}/${data.result.file_path}`, '_blank');
     }
-  } catch(e) {
-    showToast('Download fail ho gaya');
-  }
+  } catch(e) { showToast('Download fail ho gaya'); }
 }
 
 async function loadDash() {
-  const { data: files, error } = await sb.from('files').select('*').eq('user_email', currentUser.email).order('uploaded_at', { ascending: false });
-
+  const { data: files } = await sb.from('files').select('*').eq('user_email', currentUser.email).order('uploaded_at', { ascending: false });
   document.getElementById('totalFiles').textContent = files?.length || 0;
+  document.getElementById('storageUsed').textContent = (files?.length || 0) + ' files';
   const list = document.getElementById('fileList');
-
   if (!files || files.length === 0) {
     list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:2rem">Koi file nahi hai. Upload karo! ☁️</p>';
-    document.getElementById('storageUsed').textContent = '0 files';
     return;
   }
-
-  document.getElementById('storageUsed').textContent = files.length + ' files';
   list.innerHTML = files.map(f => `
     <div class="file-item">
       <span class="file-icon">${getIcon(f.file_type)}</span>
